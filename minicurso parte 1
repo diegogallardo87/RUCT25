@@ -1,0 +1,390 @@
+###########################################################
+###########################################################
+####### Minicurso: Introducción a R                 #######   
+####### 1°Workshop: Estadística para la Araucanía   #######
+####### 24 y 25 de Septiembre de 2025               #######
+####### Dictado por: Dr. Diego I. Gallardo          ####### 
+####### Departamento de Estadística                 #######
+####### Universidad del Bío-Bío                     #######
+####### contacto: dgallardo@ubiobio.cl              #######
+###########################################################
+###########################################################
+
+###########################################################
+# Instalar y cargar paquetes necesarios ###################
+###########################################################
+install.packages("ggplot2")  ##Instala paquetes
+update.packages("ggplot2")  ##Actualiza paquetes
+library(ggplot2)  ##Carga paquetes
+
+###########################################################
+# Opciones globales #######################################
+###########################################################
+options(digits = 2)  # Mostrar solo dos decimales
+options(warn = -1)   # Suprimir advertencias
+
+###########################################################
+# Crear Vectores ##########################################
+###########################################################
+vec1 <- c(2, 3, 5, 8, 13) ##vector numérico
+vec2 <- c("rojo", "verde", "azul")  ##vector de texto
+vec3 <- c(TRUE, FALSE, TRUE) ##vector lógico
+vec1
+vec2
+vec3
+vec1[1:3] ##Presenta los primeros tres elementos del vector vec1
+vec1[c(1,3,5)] ##Presenta algunos elementos del vector vec1
+
+###########################################################
+# Creando una Matriz de 3x3 ###############################
+###########################################################
+matriz1 <- matrix(1:9, nrow = 3, ncol = 3, byrow=T)
+matriz1
+matriz1[1:2,]  ##presenta solo las dos primeras filas
+matriz1[,-2]  ##presenta todas las columnas, excepto la segunda
+matriz1[2,]  ##presenta solo la segunda fila
+matriz1[2,,drop=FALSE]  ##presenta solo la segunda fila, como matriz
+
+
+###########################################################
+# Creando un Data frame ###################################
+###########################################################
+df1 <- data.frame(
+  nombre = c("Juan", "Maria", "Pedro"),
+  edad = c(25, 30, 35),
+  casado = c(FALSE, TRUE, FALSE)
+)
+df1 ##el data frame mezcla diferentes tipos de información
+
+# Not a matrix!
+df2 <- matrix(c("Juan", "Maria", "Pedro",25, 30, 35,
+	FALSE, TRUE, FALSE), ncol=3)
+df2
+
+
+###########################################################
+# Creando una Lista #######################################
+###########################################################
+lista1 <- list(
+  vec1 = c(1, 2, 3),
+  matriz1 = matrix(c(1, 2, 3, 4, 5, 6), nrow = 2, ncol = 3),
+  df1 = data.frame(
+    nombre = c("Juan", "Maria", "Pedro"),
+    edad = c(15, 26, 18),
+    casado = c(FALSE, TRUE, FALSE)
+  )
+)
+lista1 ##la lista permite mezclar diversos tipos de elementos
+
+###########################################################
+# Operaciones básicas #####################################
+###########################################################
+x <- 4 ##asignación
+y = 2 ##asignación también se puede hacer con =
+x+y ##suma
+x-y ##resta
+x*y ##multiplicación
+x/y ##división
+x^y ##potencia
+sqrt(x) ##raiz cuadrada
+x > y ##pregunta si x es mayor que y
+x < y ##pregunta si x es menor que y
+x == 4 ##pregunta si x es igual a 4
+x != 5 ##pregunta si x es diferentes de 5
+x <- x + 2 ##reasigna a x el valor de x+2
+x ##muestra el valor de x
+
+###########################################################
+# Crendo un Data frame de elecciones ######################
+###########################################################
+election_data <- data.frame(
+  Candidato = c("Ana Ramirez", "Luis Martin", "Carla Soto", "Jose Lopez", "Marta Ruiz"),
+  Partido = c("PROGRESO", "FUTURO", "PROGRESO", "UNIDAD", "FUTURO"),
+  Votos = c(15234, 17456, 16345, 14432, 15890)
+)
+election_data
+
+# 1. Votos por partido
+votos_por_partido <- aggregate(Votos ~ Partido, data = election_data, sum)
+votos_por_partido
+
+# 2. Candidato con más votos
+candidato_max <- election_data[which.max(election_data$Votos), ]
+print(candidato_max)
+
+# 3. Candidatos con más de 15000 votos
+num_candidatos_15 <- sum(election_data$Votos > 15000)
+num_candidatos_15
+election_data[which(election_data$Votos > 15000),]
+
+# 4. % de votos por partido
+total_votos <- sum(election_data$Votos)
+votos_por_partido$Porcentaje <- (votos_por_partido$Votos / total_votos) * 100
+votos_por_partido
+
+###########################################################
+# Creando Data de Presupuesto anual por departamento ######
+###########################################################
+budget_data <- data.frame(
+  Departamento = rep(c("Salud", "Educacion", "Seguridad"), times = 5),
+  Ano = rep(2020:2024, each = 3),
+  Presupuesto = c(
+    20000, 25000, 22000,
+    23000, 26000, 24000,
+    25000, 27000, 26000,
+    26000, 28000, 27000,
+    28000, 29000, 28000
+  )
+)
+budget_data
+
+# 1. Presupuesto total por departamento
+total_por_departamento <- aggregate(Presupuesto ~ Departamento, data = budget_data, sum)
+print(total_por_departamento)
+
+# Departamento con mayor presupuesto total
+dept_max <- total_por_departamento[which.max(total_por_departamento$Presupuesto), ]
+dept_max
+
+# 2. Presupuesto total por año
+total_por_ano <- aggregate(Presupuesto ~ Ano, data = budget_data, sum)
+print(total_por_ano)
+
+ano_max <- total_por_ano[which.max(total_por_ano$Presupuesto), ]
+print(ano_max)
+
+# 3. Evolución del presupuesto de Salud
+salud_evolucion <- subset(budget_data, Departamento == "Salud")
+salud_evolucion
+
+# 4. Porcentaje de cambio en el presupuesto anual
+total_por_ano <- total_por_ano[order(total_por_ano$Ano), ]
+cambios_porcentaje <- c(NA, diff(total_por_ano$Presupuesto) / head(total_por_ano$Presupuesto, -1) * 100)
+total_por_ano$CambioPorcentaje <- round(cambios_porcentaje, 2)
+print(total_por_ano)
+
+###########################################################
+# Calculando Estadísticas básicas #########################
+###########################################################
+datos <- c(20, 50, 10, 40, 20)
+mean(datos)  ##media/promedio
+median(datos) ##mediana
+moda <- as.numeric(names(table(datos))[which.max(table(datos))])
+moda ##moda
+
+# Desviación estándar, rango, coeficiente de variación ####
+datos <- c(15234, 17456, 16345, 14432, 15890)
+sd(datos)  ##desviación estándar
+diff(range(datos)) ##rango
+(sd(datos)/mean(datos))*100  ##coef. de variación
+
+###########################################################
+# Otra tabla de presupuesto ###############################
+###########################################################
+budget_data2 <- data.frame(
+  Departamento = c("Salud", "Educacion", "Transporte", "Cultura", "Defensa"),
+  Presupuesto = c(500, 700, 300, 200, 800)
+)
+mean(budget_data2$Presupuesto)
+median(budget_data2$Presupuesto)
+sd(budget_data2$Presupuesto)
+
+###########################################################
+# Datos de votaciones #####################################
+###########################################################
+votes_data <- data.frame(
+  Politica = c("Politica A", "Politica B", "Politica C", "Politica D", "Politica E"),
+  Votaciones = c(65, 75, 80, 60, 70)
+)
+mean(votes_data$Votaciones)
+median(votes_data$Votaciones)
+moda <- as.numeric(names(table(votes_data$Votaciones))[which.max(table(votes_data$Votaciones))])
+moda
+sd(votes_data$Votaciones)
+IQR(votes_data$Votaciones) ##Rango intercuartílico
+
+##Creando variables ficticias
+set.seed(2100)
+nombre <- paste("Sensor",1:100,sep="")
+temperatura <- runif(100,20,25)
+activo <- ifelse(rbinom(100, size=1, prob=0.7)==1, TRUE, FALSE)
+ubicacion <- sample(c("Sala A","Sala B","Sala C"), size=100, replace=TRUE, prob=c(0.5,0.25,0.25))
+# Crear un data frame
+sensores <- data.frame(nombre, temperatura, activo, ubicacion)
+# Mostrar el data frame
+print("Base de datos original:")
+print(sensores)  ##muestra la base de datos completa
+print(head(sensores)) ##muestra solo las primeras 6 observaciones
+
+###########################################################
+# 2. Guardar como archivo CSV #############################
+###########################################################
+write.csv(sensores, file = "sensores.csv", row.names = FALSE)
+
+###########################################################
+### Eliminamos todo lo que habia en R #####################
+###########################################################
+rm(list=ls(all=TRUE)) 
+sensores ##no deberia mostrar nada, pues no existe sensores
+
+###########################################################
+# 3. Leer el archivo CSV ##################################
+###########################################################
+sensores <- read.csv("sensores.csv")
+
+# Mostrar el data frame leído
+print("Base de datos leída desde el archivo:")
+print(sensores)
+print(head(sensores))
+
+##instalar paquete dplyr
+install.packages("dplyr")
+require(dplyr)
+
+###########################################################
+# Filtrar sensores ubicados en la "Sala A" ################
+###########################################################
+sensores_salaA1 <- sensores[sensores$ubicacion == "Sala A", ]  ##forma 1
+sensores_salaA2 <- subset(sensores, ubicacion == "Sala A") ##forma 2
+sensores_salaA3 <- sensores %>%
+  filter(ubicacion == "Sala A")  ##forma 3
+
+##muestra primeras 6 filas de cada matriz
+head(sensores_salaA1)
+head(sensores_salaA2)
+head(sensores_salaA3)
+
+##calcula la dimension en cada caso
+dim(sensores_salaA1)
+dim(sensores_salaA2)
+dim(sensores_salaA3)
+
+###########################################################
+# Filtrar sensores de la Sala A con temperatura > 23 ######
+###########################################################
+sensores_filtrados1 <- sensores[sensores$ubicacion == "Sala A" & sensores$temperatura > 23, ]
+sensores_filtrados2 <- sensores[sensores$ubicacion == "Sala A" & sensores$temperatura > 23, ]
+sensores_filtrados3 <- sensores %>%
+  filter(ubicacion == "Sala A", temperatura > 23)
+
+
+# muestra primeras 6 filas de cada matriz ################
+head(sensores_filtrados1)
+head(sensores_filtrados2)
+head(sensores_filtrados3)
+
+###########################################################
+## Suponga ahora que la temperatura en dos salas fue  #####
+## registrada de forma errónea. En la sala A,         #####
+## se debe aumentar 1 grado mientras que en la sala B #####
+## se debe disminuir 0.5 grados                       #####
+###########################################################
+
+###########################################################
+## Forma 1 ################################################
+###########################################################
+sensores2=sensores
+# Aumentar 1 grado a sensores en Sala A
+sensores2$temperatura[sensores2$ubicacion == "Sala A"] <- 
+  sensores2$temperatura[sensores2$ubicacion == "Sala A"] + 1
+
+# Disminuir 0.5 grados a sensores en Sala B
+sensores2$temperatura[sensores2$ubicacion == "Sala B"] <- 
+  sensores2$temperatura[sensores2$ubicacion == "Sala B"] - 0.5
+
+###########################################################
+## Forma 2 ################################################
+###########################################################
+sensores3=sensores
+sensores3 <- sensores3 %>%
+  mutate(
+    temperatura = case_when(
+      ubicacion == "Sala A" ~ temperatura + 1,
+      ubicacion == "Sala B" ~ temperatura - 0.5,
+      TRUE ~ temperatura  # mantener igual en otras salas
+    )
+  )
+
+head(sensores)
+head(sensores2)
+head(sensores3)
+
+
+###################################################################
+### Test de hipótesis para la media en una muestra - Dist. normal #
+###################################################################
+alturas <- c(170, 168, 181, 165, 174, 169, 171, 173, 167, 168)
+t.test(alturas, mu = 170)
+
+############################################################
+### Test de hipótesis para comparar medias en dos muestras # 
+### Dist. normal                                           # 
+############################################################
+grupo_A <- c(72, 75, 78, 74, 80, 76, 75, 73)
+grupo_B <- c(68, 70, 71, 69, 72, 68, 70, 69)
+t.test(grupo_A, grupo_B, var.equal = FALSE)
+
+###########################################################
+### Test de hipótesis para verificar normalidad ###########
+###########################################################
+shapiro.test(alturas)
+shapiro.test(grupo_A)
+shapiro.test(grupo_B)
+
+###########################################################
+# Crear factores y valores ################################
+###########################################################
+dieta <- factor(rep(c("A", "B", "C"), each = 15))
+peso <- c(
+  # Grupo A
+  70, 72, 71, 69, 73, 74, 72, 71, 70, 75, 73, 72, 74, 71, 70,
+  # Grupo B
+  65, 67, 66, 64, 66, 65, 63, 66, 68, 64, 65, 67, 66, 64, 65,
+  # Grupo C
+  75, 77, 76, 74, 76, 78, 77, 75, 74, 76, 78, 77, 75, 76, 77
+)
+
+###########################################################
+# Combinar en un data frame ###############################
+###########################################################
+datos <- data.frame(Dieta = dieta, Peso = peso)
+
+###########################################################
+# Ajustar modelo ANOVA ####################################
+###########################################################
+modelo <- aov(Peso ~ Dieta, data = datos)
+summary(modelo)
+
+###########################################################
+## Regresion lineal #######################################
+###########################################################
+cemento <- seq(200, 445, by = 5)
+resistencia <- c(
+  29.8, 31.2, 31.0, 32.5, 32.7, 34.0, 33.8, 34.7, 35.1, 35.3,
+  36.2, 36.1, 37.4, 38.0, 37.8, 38.6, 39.1, 39.3, 40.2, 40.6,
+  41.2, 41.7, 42.3, 42.6, 43.1, 43.8, 43.7, 44.3, 45.2, 44.9,
+  46.1, 46.0, 47.4, 47.3, 48.2, 48.5, 48.9, 49.4, 50.1, 49.8,
+  50.7, 51.4, 51.0, 52.3, 52.4, 52.9, 53.0, 54.2, 54.0, 55.1)
+
+datos <- data.frame(Cemento = cemento, Resistencia = resistencia)
+
+# Ajustar modelo lineal
+modelo <- lm(Resistencia ~ Cemento, data = datos)
+plot(cemento, resistencia)
+
+# Grafica el ajuste
+ggplot(datos, aes(x = Cemento, y = Resistencia)) +
+  geom_point(color = "blue", size = 2) +                # puntos reales
+  geom_smooth(method = "lm", se = TRUE, color = "red") +  # línea estimada
+  labs(title = "Resistencia a la compresión vs Cantidad de Cemento",
+       x = "Cantidad de Cemento (kg/m³)",
+       y = "Resistencia a la compresión (MPa)") +
+  theme_minimal()
+
+##Prediciendo una nueva observación
+nueva_data <- data.frame(Cemento = c(383,500))
+# Predicción puntual
+prediccion <- predict(modelo, newdata = nueva_data, interval = "confidence")
+print(prediccion)
+
+
