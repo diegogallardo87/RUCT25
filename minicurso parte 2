@@ -1,0 +1,391 @@
+###########################################################
+###########################################################
+####### Minicurso: Introducción a R
+####### 1°Workshop: Estadística para la Araucanía
+####### 24 y 25 de Septiembre de 2025
+####### Dictado por: Dr. Diego I. Gallardo
+####### Departamento de Estadística
+####### Universidad del Bío-Bío
+####### contacto: dgallardo@ubiobio.cl
+###########################################################
+###########################################################
+
+###########################################################
+# Boxplot presupuestos por distrito #######################
+###########################################################
+require(ggplot2)
+set.seed(2300)
+presupuestos <- rnorm(30, 200, 50)
+distritos <- rep(c("Distrito A", "Distrito B", "Distrito C"), each = 10)
+df_presupuestos <- data.frame(Distrito = distritos, Presupuesto = presupuestos)
+##grafico de cajas
+boxplot(Presupuesto ~ Distrito, data = df_presupuestos, main = "Presupuestos por distrito", ylab = "Miles de dólares", xlab = "Distrito")
+
+##grafico de cajas con ggplot
+ggplot(df_presupuestos, aes(x = Distrito, y = Presupuesto)) +
+  geom_boxplot(fill = "skyblue", color = "black") +
+  labs(
+    title = "Presupuestos por distrito",
+    x = "Distrito",
+    y = "Miles de dólares"
+  ) +
+  theme_minimal()
+
+###########################################################
+# Gráfico de dispersión ###################################
+###########################################################
+impuestos <- rnorm(10, 500, 100)
+proyectos <- impuestos / 10 + 3*rnorm(10)
+departamentos <- paste("Departamento", LETTERS[1:10])
+df_departamentos <- data.frame(Departamento = departamentos, Impuestos = impuestos, Proyectos = proyectos)
+plot(Impuestos ~ Proyectos, data = df_departamentos, main = "Impuestos vs Proyectos", xlab = "Impuestos (miles USD)", ylab = "Proyectos")
+
+# Grafico de dispersion con ggplot2
+ggplot(df_departamentos, aes(x = Impuestos, y = Proyectos)) +
+  geom_point(color = "blue", size = 3) +
+  geom_text(aes(label = Departamento), vjust = -0.5, size = 3) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(
+    title = "Impuestos vs Proyectos",
+    x = "Impuestos (miles USD)",
+    y = "Proyectos"
+  ) +
+  theme_minimal()
+
+###########################################################
+# Gráfico de barras de servicios ##########################
+###########################################################
+frecuencia <- c(1200, 800, 500, 1500, 2000, 1800, 1750, 1300, 1400, 1900, 2100)
+servicios <- c("Agua", "Electricidad", "Gas", "Internet", "Transporte", "Basura", "Seguridad", "Educación", "Salud", "Ocio", "Otros")
+bp <- barplot(frecuencia, names.arg = FALSE,
+              main = "Uso de servicios públicos",
+              ylab = "Frecuencia", xlab = "Servicios", 
+              las = 1)  # las=1 mantiene etiquetas del eje Y horizontales
+text(x = bp, y = par("usr")[3] - 100, labels = servicios, 
+     srt = 45, adj = 1, xpd = TRUE, cex = 0.8)
+
+# Crear gráfico de barras con ggplot2
+df_servicios <- data.frame(Servicio = servicios, Frecuencia = frecuencia)
+ggplot(df_servicios, aes(x = Servicio, y = Frecuencia)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(
+    title = "Uso de servicios públicos",
+    x = "Servicios",
+    y = "Frecuencia"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+###########################################################
+# Gráfico de Barras Apiladas ##############################
+###########################################################
+matriz <- matrix(c(10, 20, 30, 15, 25, 5), nrow = 2)
+barplot(matriz, 
+        beside = FALSE, 
+        col = c("orange", "cyan"), 
+        legend = c("Energía", "Pérdidas"), 
+        main = "Barras Apiladas", 
+        names.arg = c("Día 1", "Día 2", "Día 3"))
+
+# Creando Gráfico de Barras Apiladas con ggplot
+df <- as.data.frame(matriz)
+colnames(df) <- c("Día 1", "Día 2", "Día 3")
+df$Tipo <- c("Energía", "Pérdidas")
+# Reorganizar en formato largo (long format)
+df_largo <- reshape2::melt(df, id.vars = "Tipo", variable.name = "Día", value.name = "Valor")
+ggplot(df_largo, aes(x = Día, y = Valor, fill = Tipo)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Barras Apiladas",
+    x = NULL,
+    y = "Valor"
+  ) +
+  scale_fill_manual(values = c("orange", "cyan")) +
+  theme_minimal()
+
+###########################################################
+# Matplot para evolución de empleados #####################
+###########################################################
+set.seed(2100)
+empleados <- matrix(rnorm(100, 5500, 500), ncol = 10)
+colnames(empleados) <- 2013:2022
+rownames(empleados) <- paste("Departamento", LETTERS[1:10])
+matplot(t(empleados), type = "l", lty = 1, xlab = "Año", ylab = "Empleados", main = "Empleados públicos por departamento",
+	col=rainbow(10))
+legend("bottomright", legend = rownames(empleados), col = rainbow(10), lty = 1, cex = 0.7)
+
+# Matplot para evolución de empleados con ggplot
+install.packages("reshape2")
+library(reshape2)
+df <- as.data.frame(empleados)
+df$Departamento <- rownames(empleados)
+df_largo <- melt(df, id.vars = "Departamento", variable.name = "Año", value.name = "Empleados")
+df_largo$Año <- as.numeric(as.character(df_largo$Año))
+ggplot(df_largo, aes(x = Año, y = Empleados, color = Departamento)) +
+  geom_line(size = 1) +
+  labs(
+    title = "Empleados públicos por departamento",
+    x = "Año",
+    y = "Empleados"
+  ) +
+  scale_x_continuous(breaks = 2013:2022) +
+  scale_color_manual(values = rainbow(10)) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+###########################################################
+# Gráfico de Torta ########################################
+###########################################################
+porcentajes <- c(40, 30, 20, 10)
+etiquetas <- c("Correcto", "Error", "Advertencia", "Desconocido")
+etiquetas_con_porcentaje <- paste(etiquetas, "-", porcentajes, "%")
+pie(porcentajes, 
+    labels = etiquetas_con_porcentaje, 
+    main = "Gráfico de Pastel con Porcentajes", 
+    col = rainbow(length(porcentajes)))
+
+#Grafico de Torta con ggplot 
+library(ggplot2)
+library(dplyr)
+
+df <- data.frame(Etiqueta = etiquetas, Porcentaje = porcentajes)
+# Gráfico de pastel con ggplot2
+df <- df %>%
+  arrange(desc(Etiqueta)) %>%
+  mutate(
+    porc_frac = Porcentaje / sum(Porcentaje),
+    ypos = cumsum(porc_frac) - porc_frac / 2,
+    etiqueta_completa = paste0(Etiqueta, " - ", Porcentaje, "%")
+  )
+
+ggplot(df, aes(x = "", y = Porcentaje, fill = Etiqueta)) +
+  geom_bar(stat = "identity", width = 1, color = "white") +
+  coord_polar(theta = "y") +
+  geom_text(aes(y = ypos * 100, label = etiqueta_completa), color = "black", size = 5) +  # Aquí el color negro
+  scale_fill_manual(values = rainbow(length(porcentajes))) +
+  theme_void() +
+  ggtitle("Gráfico de Pastel con Porcentajes")
+
+
+###########################################################
+# Gráfico de series temporales ############################
+###########################################################
+
+# Crear datos de ejemplo
+set.seed(123)
+fechas <- seq.Date(from = as.Date("2023-01-01"), by = "day", length.out = 30)
+temperaturas <- 15 + sin(2 * pi * (1:30) / 30) * 10 + rnorm(30, 0, 2)
+
+# Graficar serie temporal con base R
+plot(fechas, temperaturas, type = "o", col = "blue", pch = 16,
+     xlab = "Fecha", ylab = "Temperatura (°C)",
+     main = "Serie Temporal de Temperatura Diaria")
+
+df <- data.frame(Fecha = fechas, Temperatura = temperaturas)
+
+# Graficar serie temporal
+ggplot(df, aes(x = Fecha, y = Temperatura)) +
+  geom_line(color = "blue") +              # línea de temperatura
+  geom_point(color = "red") +              # puntos en cada fecha
+  labs(title = "Serie Temporal de Temperatura Diaria",
+       x = "Fecha",
+       y = "Temperatura (°C)") +
+  theme_minimal()
+
+
+###########################################################
+# Gráfico de Correlación ##################################
+###########################################################
+install.packages("corrplot")
+library(corrplot)
+# Usaremos el dataset iris (solo variables numéricas)
+data <- iris[, 1:4]
+# Calcular matriz de correlaciones
+cor_matrix <- cor(data)
+
+# Graficar correlograma
+corrplot(cor_matrix, method = "circle", type = "upper",
+         tl.col = "black", tl.srt = 45, # etiquetas en negro y rotadas
+         addCoef.col = "black", # agrega coeficientes numéricos
+         number.cex = 0.7,      # tamaño de números
+         title = "Correlograma de variables en iris",
+         mar = c(0,0,1,0))      # margen para el título
+
+###########################################################
+# Mapa de calor ###########################################
+###########################################################
+# Crear una matriz de ejemplo
+set.seed(1)
+matriz <- matrix(rnorm(100), nrow = 10)
+rownames(matriz) <- paste("Fila", 1:10)
+colnames(matriz) <- paste("Col", 1:10)
+
+# Graficar mapa de calor
+heatmap(matriz, 
+        Rowv = NA, Colv = NA, # sin dendrogramas
+        col = heat.colors(100), 
+        scale = "none", 
+        main = "Mapa de Calor (Base R)")
+
+library(reshape2)
+##Con ggplot
+df_melt <- melt(matriz)
+
+# Cambiar nombres para claridad
+colnames(df_melt) <- c("Fila", "Columna", "Valor")
+
+# Graficar
+ggplot(df_melt, aes(x = Columna, y = Fila, fill = Valor)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
+  labs(title = "Mapa de Calor con ggplot2", x = "", y = "") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+###########################################################
+## Graficar mapa de Chile #################################
+###########################################################
+install.packages(c("geodata","sf"))
+library(geodata)
+library(sf)
+library(ggplot2)
+library(dplyr)
+
+# Descargar mapa de Chile, nivel 1 (regiones)
+chile_sf <- gadm(country = "CHL", level = 1, path = tempdir())
+
+# Simular variable por región
+set.seed(123)
+variable_region <- data.frame(
+  NAME_1 = chile_sf$NAME_1,
+  desarrollo = runif(nrow(chile_sf), 0.5, 0.95)
+)
+chile_sf_joined <- merge(chile_sf, variable_region, by = "NAME_1")
+chile_sf_joined <- st_as_sf(chile_sf_joined)
+centroides <- st_centroid(chile_sf_joined)
+
+# Graficar
+ggplot(chile_sf_joined) +
+  geom_sf(aes(fill = desarrollo), color = "gray30") +
+  scale_fill_gradient(low = "yellow", high = "darkgreen", name = "Índice de desarrollo") +
+  ggtitle("Índice de Desarrollo por Región (simulado)") +
+  theme_minimal()
+
+# Graficar con nombres de regiones
+ggplot(chile_sf_joined) +
+  geom_sf(aes(fill = desarrollo), color = "gray30") +
+  geom_sf_text(data = centroides, aes(label = NAME_1), size = 3, color = "black") +
+  scale_fill_gradient(low = "yellow", high = "darkgreen", name = "Índice de desarrollo") +
+  ggtitle("Índice de Desarrollo por Región (simulado)") +
+  theme_minimal()
+
+###########################################################
+### Nube de palabras ######################################
+###########################################################
+
+# Cargar paquetes necesarios
+install.packages(c("httr", "jsonlite", "tm", "wordcloud"))
+
+library(httr)
+library(jsonlite)
+library(tm)
+library(wordcloud)
+
+# API Key de YouTube
+api_key <- "AIzaSyCQRVZEP0DlAA5BD3gOU4Q6hc5qqxIY0qE"
+
+# seleccionamos el video de YouTube
+video_id <- "QOQ1CHBjxIU"
+
+# extraemos los comentarios
+get_comments <- function(video_id, api_key, max_n = 2000) {
+  url_base <- "https://www.googleapis.com/youtube/v3/commentThreads"
+  comments <- data.frame()
+  nextPageToken <- NULL
+  
+  while(nrow(comments) < max_n) {
+    url <- paste0(
+      url_base,
+      "?part=snippet&videoId=", video_id,
+      "&maxResults=100&key=", api_key,
+      if(!is.null(nextPageToken)) paste0("&pageToken=", nextPageToken)
+    )
+    
+    res <- GET(url)
+    data <- fromJSON(rawToChar(res$content))
+    
+    if(length(data$items) == 0) break
+    
+    df <- data$items$snippet$topLevelComment$snippet[
+      , c("authorDisplayName", "publishedAt", "textDisplay")]
+    
+    comments <- rbind(comments, df)
+    
+    if(!is.null(data$nextPageToken)) {
+      nextPageToken <- data$nextPageToken
+    } else {
+      break
+    }
+  }
+  
+  return(head(comments, max_n))
+}
+
+# Obtener los comentarios
+comments <- get_comments(video_id, api_key, max_n = 2000)
+comentarios <- comments$textDisplay
+head(comentarios)
+
+# Limpieza del texto de los comentarios
+corpus <- Corpus(VectorSource(comentarios))
+corpus <- tm_map(corpus, content_transformer(tolower))         # Convertir a minúsculas
+corpus <- tm_map(corpus, removePunctuation)                    # Eliminar puntuación
+corpus <- tm_map(corpus, removeNumbers)                        # Eliminar números
+corpus <- tm_map(corpus, removeWords, stopwords("spanish"))    # Eliminar palabras vacías
+corpus <- tm_map(corpus, stripWhitespace)                      # Eliminar espacios adicionales
+
+# Nube de palabras
+wordcloud(corpus, max.words = 50, #muestra las 100 palabras mas usadas
+          random.order = FALSE, #se ordenan ppor frecuencia
+          scale = c(3, 1)) #color y tamaño
+
+###########################################################
+### Ejemplo de k-medias ###################################
+###########################################################
+# Cargar datos iris, datos de literatura
+data(iris)
+# Usamos solo las variables numéricas
+iris_datos <- iris[, 1:4]
+head(iris_datos)
+dim(iris_datos)
+
+# Aplicar k-medias con k = 3 (porque hay 3 especies)
+set.seed(123)
+resultado_kmeans <- kmeans(iris_datos, centers = 3)
+
+# Ver resumen del resultado
+print(resultado_kmeans)
+
+# Comparar clusters con especies reales
+tabla_comparacion <- table(Cluster = resultado_kmeans$cluster, Especie = iris$Species)
+print(tabla_comparacion)
+
+
+###########################################################
+# Reducir dimensión con PCA para graficar #################
+###########################################################
+iris_pca <- prcomp(iris_datos, center = TRUE, scale. = TRUE)
+df_plot <- data.frame(PC1 = iris_pca$x[,1],
+                      PC2 = iris_pca$x[,2],
+                      Cluster = factor(resultado_kmeans$cluster),
+                      Especie = iris$Species)
+
+# Graficar clusters estimados
+ggplot(df_plot, aes(x = PC1, y = PC2, color = Cluster, shape = Especie)) +
+  geom_point(size = 3) +
+  labs(title = "k-medias en datos iris (proyección PCA)") +
+  theme_minimal()
+
+
+
+
